@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.lang.Math;
 
 String[] phrases; //contains all of the phrases
 int totalTrialNum = 2; //the total number of phrases to be tested - set this low for testing. Might be ~10 for the real bakeoff!
@@ -18,8 +19,26 @@ final float sizeOfInputArea = DPIofYourDeviceScreen*1; //aka, 1.0 inches square!
 PImage watch;
 PImage finger;
 
-//Variables for my silly implementation. You can delete this:
-char currentLetter = 'a';
+// For tracking currently selected menu
+enum Menu {
+  MAIN,
+  CONTEXT1,
+  CONTEXT2,
+  CONTEXT3,
+  CONTEXT4
+}
+
+Menu currentMenu = Menu.MAIN;
+
+// Button drawing/mapping information
+ArrayList<PVector> fourRadialPoints;
+ArrayList<PVector> sixRadialPoints;
+ArrayList<PVector> sevenRadialPoints;
+HashMap<Menu, ArrayList<PVector>> radialPointsMap = new HashMap<Menu, ArrayList<PVector>>();
+
+// Display drawing values
+int menuStrokeWeight = 4;
+float centerButtonDiameter = sizeOfInputArea/3.5;
 
 //You can modify anything in here. This is just a basic implementation.
 void setup()
@@ -35,6 +54,16 @@ void setup()
   size(800, 800); //Sets the size of the app. You should modify this to your device's native size. Many phones today are 1080 wide by 1920 tall.
   textFont(createFont("Arial", 20)); //set the font to arial 24. Creating fonts is expensive, so make difference sizes once in setup, not draw
   noStroke(); //my code doesn't use any strokes
+  
+  fourRadialPoints = generateRadialPoints(4);
+  sixRadialPoints = generateRadialPoints(6);
+  sevenRadialPoints = generateRadialPoints(7);
+  
+  radialPointsMap.put(Menu.MAIN, fourRadialPoints);
+  radialPointsMap.put(Menu.CONTEXT1, sevenRadialPoints);
+  radialPointsMap.put(Menu.CONTEXT2, sixRadialPoints);
+  radialPointsMap.put(Menu.CONTEXT3, sevenRadialPoints);
+  radialPointsMap.put(Menu.CONTEXT4, sixRadialPoints);
 }
 
 //You can modify anything in here. This is just a basic implementation.
@@ -96,50 +125,154 @@ void draw()
     text("NEXT > ", 650, 650); //draw next label
 
     //example design draw code
-    fill(255, 0, 0); //red button
-    rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2); //draw left red button
-    fill(0, 255, 0); //green button
-    rect(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2); //draw right green button
-    textAlign(CENTER);
-    fill(200);
-    text("" + currentLetter, width/2, height/2-sizeOfInputArea/4); //draw current letter
+    drawContextMenu();
   }
  
  
   //drawFinger(); //no longer needed as we'll be deploying to an actual touschreen device
 }
 
-//my terrible implementation you can entirely replace
+void drawContextMenu() {
+  pushStyle();
+  
+  drawRadialLines(4);
+  
+  // Center circle button
+  stroke(0);
+  strokeWeight(menuStrokeWeight);
+  fill(100);
+  circle(width/2, height/2, centerButtonDiameter); //draw left red button
+  
+  popStyle();
+}
+
+void drawRadialLines(int numOfLines) {
+  pushStyle();
+  pushMatrix();
+  stroke(0);
+  strokeWeight(menuStrokeWeight);
+  
+  float radius = sizeOfInputArea/2;
+  
+  float startAngle = PI/numOfLines;
+  
+  for (int i = 0; i < numOfLines; i++) {
+    
+    float angle = map(i, 0, numOfLines, -PI/2, PI * 3/2) + startAngle;
+    
+    // Calculate x positions around a circle with radius / the width of the size of input area
+    float x = cos(angle) * radius;
+    float y = sin(angle) * radius;
+    
+    // Adjust x and y position to reach to edge of input area
+    if (angle >= -PI/4 && angle <= PI/4) { // line is drawn towards right
+      float newX = radius;
+      float scaleFactor = newX/x;
+      x = newX;
+      y = y * scaleFactor;
+    }
+    else if (angle >= PI/4 && angle <= PI * 3/4) { // line is drawn towards bottom
+      float newY = radius;
+      float scaleFactor = newY/y;
+      x = x * scaleFactor;
+      y = newY;
+    }
+    else if (angle >= PI * 3/4 && angle <= PI * 5/4) { // line is drawn towards left
+      float newX = -radius;
+      float scaleFactor = newX/x;
+      x = newX;
+      y = y * scaleFactor;
+    }
+    else { // line is drawn towards top
+      float newY = -radius;
+      float scaleFactor = newY/y;
+      x = x * scaleFactor;
+      y = newY;
+    }
+    
+    // Adjust x and y positions to go from center of screen
+    x += width/2;
+    y += height/2;
+    
+    float colr = map(i, 0, numOfLines, 0, 255);
+    stroke(colr);
+
+    line(width/2, height/2, x, y);
+  }
+  
+  popStyle();
+  popMatrix();
+}
+
+// Generates a given amount of evenly spaced radial x, y points around the edge of the input area
+ArrayList<PVector> generateRadialPoints(int numOfPoints) {
+  
+  ArrayList<PVector> radialPoints = new ArrayList<PVector>();
+  float radius = sizeOfInputArea/2;
+  float startAngle = PI/numOfPoints;
+  
+  for (int i = 0; i < numOfPoints; i++) {
+    
+    float angle = map(i, 0, numOfPoints, -PI/2, PI * 3/2) + startAngle;
+    
+    // Calculate x positions around a circle with radius / the width of the size of input area
+    float x = cos(angle) * radius;
+    float y = sin(angle) * radius;
+    
+    // Adjust x and y position to reach to edge of input area
+    if (angle >= -PI/4 && angle <= PI/4) { // right side points
+      float newX = radius;
+      float scaleFactor = newX/x;
+      x = newX;
+      y = y * scaleFactor;
+    }
+    else if (angle >= PI/4 && angle <= PI * 3/4) { // bottom points
+      float newY = radius;
+      float scaleFactor = newY/y;
+      x = x * scaleFactor;
+      y = newY;
+    }
+    else if (angle >= PI * 3/4 && angle <= PI * 5/4) { // left points
+      float newX = -radius;
+      float scaleFactor = newX/x;
+      x = newX;
+      y = y * scaleFactor;
+    }
+    else { // top points
+      float newY = -radius;
+      float scaleFactor = newY/y;
+      x = x * scaleFactor;
+      y = newY;
+    }
+    
+    // Adjust x and y positions to go from center of screen
+    x += width/2;
+    y += height/2;
+    
+    radialPoints.add(new PVector(x, y));
+  }
+  
+  return radialPoints;
+}
+
 boolean didMouseClick(float x, float y, float w, float h) //simple function to do hit testing
 {
-  return (mouseX > x && mouseX<x+w && mouseY>y && mouseY<y+h); //check to see if it is in button bounds
+  return (mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h); //check to see if it is in button bounds
 }
 
 //my terrible implementation you can entirely replace
 void mousePressed()
 {
-  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in left button
-  {
-    currentLetter --;
-    if (currentLetter<'_') //wrap around to z
-      currentLetter = 'z';
-  }
-
-  if (didMouseClick(width/2-sizeOfInputArea/2+sizeOfInputArea/2, height/2-sizeOfInputArea/2+sizeOfInputArea/2, sizeOfInputArea/2, sizeOfInputArea/2)) //check if click in right button
-  {
-    currentLetter ++;
-    if (currentLetter>'z') //wrap back to space (aka underscore)
-      currentLetter = '_';
-  }
-
-  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea/2)) //check if click occured in letter area
-  {
-    if (currentLetter=='_') //if underscore, consider that a space bar
-      currentTyped+=" ";
-    else if (currentLetter=='`' & currentTyped.length()>0) //if `, treat that as a delete command
-      currentTyped = currentTyped.substring(0, currentTyped.length()-1);
-    else if (currentLetter!='`') //if not any of the above cases, add the current letter to the typed string
-      currentTyped+=currentLetter;
+  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea)) //check if click in left button
+  {  
+    // Click is in center button
+    if (clickInCircle(width/2, height/2, centerButtonDiameter/2)) {
+      println("Center button clicked");
+    }
+    // Click is in one of the radial buttons
+    else {
+      println("Not yet implemented");
+    }
   }
 
   //You are allowed to have a next button outside the 1" area
@@ -149,6 +282,9 @@ void mousePressed()
   }
 }
 
+boolean clickInCircle(float circleCenterX, float circleCenterY, float circleRadius) {
+  return Math.sqrt(Math.pow(mouseX - circleCenterX, 2) + Math.pow(mouseY - circleCenterY, 2)) <= circleRadius;
+}
 
 void nextTrial()
 {
@@ -239,7 +375,7 @@ void drawFinger()
   ellipse(0,0,5,5);
 
   popMatrix();
-  }
+}
   
 
 //=========SHOULD NOT NEED TO TOUCH THIS METHOD AT ALL!==============
@@ -257,4 +393,29 @@ int computeLevenshteinDistance(String phrase1, String phrase2) //this computers 
       distance[i][j] = min(min(distance[i - 1][j] + 1, distance[i][j - 1] + 1), distance[i - 1][j - 1] + ((phrase1.charAt(i - 1) == phrase2.charAt(j - 1)) ? 0 : 1));
 
   return distance[phrase1.length()][phrase2.length()];
+}
+
+// The following methods are used to check if a point occurs inside a triangle
+// based on the SameSide technique as explained by blackpawn.com: 
+// https://blackpawn.com/texts/pointinpoly/#:~:text=Same%20Side%20Technique,but%20it%20is%20very%20slow
+
+// Measures that two points are on the same side of a line ab
+boolean sameSide(PVector p1, PVector p2, PVector a, PVector b) {
+  PVector bSubA = b.sub(a);
+  PVector p1SubA = p1.sub(a);
+  PVector p2SubA = p2.sub(a);
+
+  // Get cross products
+  float cp1 = bSubA.x * p1SubA.y - bSubA.y * p1SubA.x;
+  float cp2 = bSubA.x * p2SubA.y - bSubA.y * p2SubA.x;
+
+  // Return dot product >= 0
+  return cp1 * cp2 >= 0;
+}
+
+// Checks if given point is inside 3 given points of triangle
+boolean pointInTriangle(PVector clickPoint, PVector pointA, PVector pointB, PVector pointC) {
+  return sameSide(clickPoint, pointA, pointB, pointC) 
+         && sameSide(clickPoint, pointB, pointA, pointC) 
+         && sameSide(clickPoint, pointC, pointA, pointB);
 }
