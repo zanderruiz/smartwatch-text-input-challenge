@@ -217,16 +217,39 @@ boolean didMouseClick(float x, float y, float w, float h) //simple function to d
 //my terrible implementation you can entirely replace
 void mousePressed()
 {
+  if (startTime == 0) return;
+  
+  // Click is in watch input area
   if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea)) //check if click in left button
   {  
     // Click is in center button
     if (clickInCircle(width/2, height/2, centerButtonDiameter/2)) {
       println("Center button clicked");
+      currentMenu = Menu.MAIN;
     }
     // Click is in one of the radial buttons
     else {
       int buttonClicked = getRadialButtonClicked();
-      println("Radial button clicked:" + buttonClicked);
+      switch (currentMenu) {
+        case MAIN:
+          switch (buttonClicked) {
+            case 0:
+              currentMenu = Menu.CONTEXT1;
+              break;
+            case 1:
+              currentMenu = Menu.CONTEXT2;
+              break;
+            case 2:
+              currentMenu = Menu.CONTEXT3;
+              break;
+            case 3:
+              currentMenu = Menu.CONTEXT4;
+              break;
+          }
+          break;
+        default:
+          println("Button clicked: " + buttonClicked);
+      }
     }
   }
 
