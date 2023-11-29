@@ -43,18 +43,19 @@ int menuStrokeWeight = 4;
 float centerButtonDiameter = sizeOfInputArea/3.5;
 
 // Used to measure double and triple click
-long clickDelayTime = 200l;
+long clickDelayTime = 210l;
 int clicks = 0;
 Timer clickTimer = new Timer();
 class ClickDelay extends TimerTask
 {
     public void run()
     {
-      // 1 click measure
+      // 1 click triggers a space
       if (clicks == 1) {
         currentTyped += " ";
         clicks = 0;
       }
+      // Delay further to see if user doubl clicks for delete
       else {
         Timer deleteTimer = new Timer();
         deleteTimer.schedule(new Delete(), clickDelayTime);
@@ -66,7 +67,7 @@ class Delete extends TimerTask
     public void run()
     {
       if (clicks == 2) {
-        currentTyped = currentTyped.length() > 0 ? currentTyped.substring(0, currentTyped.length()-1) : currentTyped;
+        deleteText();
       }
       else {
         currentMenu = Menu.MAIN;
@@ -74,6 +75,10 @@ class Delete extends TimerTask
       clicks = 0;
     }
 }
+
+// for swipe gesture logic
+float swipeThresh = 5; // x distance threshold to count a drag movement as a swipe gesture
+PVector swipeStartLocation;
 
 //You can modify anything in here. This is just a basic implementation.
 void setup()
@@ -249,18 +254,36 @@ boolean didMouseClick(float x, float y, float w, float h) //simple function to d
   return (mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h); //check to see if it is in button bounds
 }
 
-//my terrible implementation you can entirely replace
-void mousePressed()
+boolean pointInInputArea(float x, float y)
+{
+  float leftBound = width/2-sizeOfInputArea/2;
+  float topBound = height/2-sizeOfInputArea/2;
+  return (x > leftBound && x < leftBound+sizeOfInputArea && y > topBound && y < topBound+sizeOfInputArea);
+}
+
+void mousePressed() {
+  swipeStartLocation = new PVector(mouseX, mouseY);
+}
+
+void mouseReleased()
 {
   if (startTime == 0) return;
   
+  if (abs(mouseX - swipeStartLocation.x) > swipeThresh
+     && pointInInputArea(swipeStartLocation.x, swipeStartLocation.y)) {
+       if (mouseX - swipeStartLocation.x < 0) { // left swipe deletes
+         deleteText();
+       }
+       else { // right swipe goes back to main menu
+         currentMenu = Menu.MAIN;
+       }
+  }
+  
   // Click is in watch input area
-  if (didMouseClick(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea)) //check if click in left button
+  if (pointInInputArea(mouseX, mouseY)) //check if click in left button
   {  
     // Click is in center button
     if (clickInCircle(width/2, height/2, centerButtonDiameter/2)) {
-      println("Center button clicked");
-      //currentMenu = Menu.MAIN;
       if (clicks == 0) {
         clickTimer.schedule(new ClickDelay(), clickDelayTime);
       }
@@ -416,6 +439,10 @@ void drawFinger()
   ellipse(0,0,5,5);
 
   popMatrix();
+}
+
+void deleteText() {
+  currentTyped = currentTyped.length() > 0 ? currentTyped.substring(0, currentTyped.length()-1) : currentTyped;
 }
   
 
