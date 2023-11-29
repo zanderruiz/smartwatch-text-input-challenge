@@ -2,6 +2,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import java.lang.Math;
+import java.util.Timer;
+import java.util.TimerTask;
 
 String[] phrases; //contains all of the phrases
 int totalTrialNum = 2; //the total number of phrases to be tested - set this low for testing. Might be ~10 for the real bakeoff!
@@ -39,6 +41,39 @@ HashMap<Menu, ArrayList<PVector>> radialPointsMap = new HashMap<Menu, ArrayList<
 // Display drawing values
 int menuStrokeWeight = 4;
 float centerButtonDiameter = sizeOfInputArea/3.5;
+
+// Used to measure double and triple click
+long clickDelayTime = 200l;
+int clicks = 0;
+Timer clickTimer = new Timer();
+class ClickDelay extends TimerTask
+{
+    public void run()
+    {
+      // 1 click measure
+      if (clicks == 1) {
+        currentTyped += " ";
+        clicks = 0;
+      }
+      else {
+        Timer deleteTimer = new Timer();
+        deleteTimer.schedule(new Delete(), clickDelayTime);
+      }
+    }
+}
+class Delete extends TimerTask
+{
+    public void run()
+    {
+      if (clicks == 2) {
+        currentTyped = currentTyped.length() > 0 ? currentTyped.substring(0, currentTyped.length()-1) : currentTyped;
+      }
+      else {
+        currentMenu = Menu.MAIN;
+      }
+      clicks = 0;
+    }
+}
 
 //You can modify anything in here. This is just a basic implementation.
 void setup()
@@ -225,7 +260,11 @@ void mousePressed()
     // Click is in center button
     if (clickInCircle(width/2, height/2, centerButtonDiameter/2)) {
       println("Center button clicked");
-      currentMenu = Menu.MAIN;
+      //currentMenu = Menu.MAIN;
+      if (clicks == 0) {
+        clickTimer.schedule(new ClickDelay(), clickDelayTime);
+      }
+      clicks ++;
     }
     // Click is in one of the radial buttons
     else {
@@ -246,6 +285,18 @@ void mousePressed()
               currentMenu = Menu.CONTEXT4;
               break;
           }
+          break;
+        case CONTEXT1:
+          currentTyped += char('a' + buttonClicked);
+          break;
+        case CONTEXT2:
+          currentTyped += char('h' + buttonClicked);
+          break;
+        case CONTEXT3:
+          currentTyped += char('n' + buttonClicked);
+          break;
+        case CONTEXT4:
+          currentTyped += char('u' + buttonClicked);
           break;
         default:
           println("Button clicked: " + buttonClicked);
