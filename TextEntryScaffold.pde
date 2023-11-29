@@ -135,7 +135,7 @@ void draw()
 void drawContextMenu() {
   pushStyle();
   
-  drawRadialLines(4);
+  drawRadialLines(radialPointsMap.get(currentMenu));
   
   // Center circle button
   stroke(0);
@@ -146,62 +146,16 @@ void drawContextMenu() {
   popStyle();
 }
 
-void drawRadialLines(int numOfLines) {
+void drawRadialLines(ArrayList<PVector> radialPoints) {
   pushStyle();
-  pushMatrix();
   stroke(0);
   strokeWeight(menuStrokeWeight);
   
-  float radius = sizeOfInputArea/2;
-  
-  float startAngle = PI/numOfLines;
-  
-  for (int i = 0; i < numOfLines; i++) {
-    
-    float angle = map(i, 0, numOfLines, -PI/2, PI * 3/2) + startAngle;
-    
-    // Calculate x positions around a circle with radius / the width of the size of input area
-    float x = cos(angle) * radius;
-    float y = sin(angle) * radius;
-    
-    // Adjust x and y position to reach to edge of input area
-    if (angle >= -PI/4 && angle <= PI/4) { // line is drawn towards right
-      float newX = radius;
-      float scaleFactor = newX/x;
-      x = newX;
-      y = y * scaleFactor;
-    }
-    else if (angle >= PI/4 && angle <= PI * 3/4) { // line is drawn towards bottom
-      float newY = radius;
-      float scaleFactor = newY/y;
-      x = x * scaleFactor;
-      y = newY;
-    }
-    else if (angle >= PI * 3/4 && angle <= PI * 5/4) { // line is drawn towards left
-      float newX = -radius;
-      float scaleFactor = newX/x;
-      x = newX;
-      y = y * scaleFactor;
-    }
-    else { // line is drawn towards top
-      float newY = -radius;
-      float scaleFactor = newY/y;
-      x = x * scaleFactor;
-      y = newY;
-    }
-    
-    // Adjust x and y positions to go from center of screen
-    x += width/2;
-    y += height/2;
-    
-    float colr = map(i, 0, numOfLines, 0, 255);
-    stroke(colr);
-
-    line(width/2, height/2, x, y);
+  for (PVector point : radialPoints) {
+    line(width/2, height/2, point.x, point.y);
   }
   
   popStyle();
-  popMatrix();
 }
 
 // Generates a given amount of evenly spaced radial x, y points around the edge of the input area
@@ -271,7 +225,8 @@ void mousePressed()
     }
     // Click is in one of the radial buttons
     else {
-      println("Not yet implemented");
+      int buttonClicked = getRadialButtonClicked();
+      println("Radial button clicked:" + buttonClicked);
     }
   }
 
@@ -284,6 +239,18 @@ void mousePressed()
 
 boolean clickInCircle(float circleCenterX, float circleCenterY, float circleRadius) {
   return Math.sqrt(Math.pow(mouseX - circleCenterX, 2) + Math.pow(mouseY - circleCenterY, 2)) <= circleRadius;
+}
+
+// Returns the button clicked. 0 represents the top button, then num returned increases clockwise
+int getRadialButtonClicked() {
+  ArrayList<PVector> radialPoints = radialPointsMap.get(currentMenu);
+  for (int i = 0; i < radialPoints.size() - 1; i++) {
+    if (pointInTriangle(new PVector(mouseX, mouseY), new PVector(width/2, height/2), radialPoints.get(i), radialPoints.get(i + 1))) {
+      return (i + 1) % radialPoints.size();
+    }
+  }
+  // If button clicked was none of the others, it must be the last
+  return 0;
 }
 
 void nextTrial()
@@ -401,9 +368,9 @@ int computeLevenshteinDistance(String phrase1, String phrase2) //this computers 
 
 // Measures that two points are on the same side of a line ab
 boolean sameSide(PVector p1, PVector p2, PVector a, PVector b) {
-  PVector bSubA = b.sub(a);
-  PVector p1SubA = p1.sub(a);
-  PVector p2SubA = p2.sub(a);
+  PVector bSubA = new PVector(b.x - a.x, b.y - a.y);
+  PVector p1SubA = new PVector(p1.x - a.x, p1.y - a.y);
+  PVector p2SubA = new PVector(p2.x - a.x, p2.y - a.y);
 
   // Get cross products
   float cp1 = bSubA.x * p1SubA.y - bSubA.y * p1SubA.x;
