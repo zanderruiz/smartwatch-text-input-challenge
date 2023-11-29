@@ -135,7 +135,6 @@ void draw()
   fill(100);
   rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea); //input area should be 1" by 1"
   
-
   if (startTime==0 & !mousePressed)
   {
     fill(128);
@@ -168,15 +167,15 @@ void draw()
     drawContextMenu();
   }
  
- 
   //drawFinger(); //no longer needed as we'll be deploying to an actual touschreen device
 }
 
 void drawContextMenu() {
   pushStyle();
   
-  drawRadialLines(radialPointsMap.get(currentMenu));
-  
+  // Draw letter display for "CONTEXT"
+  drawLettersForCurrMenu();
+       
   // Center circle button
   stroke(0);
   strokeWeight(menuStrokeWeight);
@@ -184,6 +183,48 @@ void drawContextMenu() {
   circle(width/2, height/2, centerButtonDiameter); //draw left red button
   
   popStyle();
+}
+
+void drawLettersForCurrMenu(){ 
+  ArrayList<PVector> radialPoints = radialPointsMap.get(currentMenu);
+  drawRadialLines(radialPoints);
+  
+  // Draw letters between the radial lines
+  for (int i = 0; i < radialPoints.size(); i++) {
+    PVector point1 = radialPoints.get(i);
+    PVector point2 = radialPoints.get((i + 1) % radialPoints.size());
+    
+    float x1 = point1.x;
+    float y1 = point1.y;
+    float x2 = point2.x;
+    float y2 = point2.y;
+    
+    float letterX = (x1 + x2) / 2;
+    float letterY = (y1 + y2) / 2;
+
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textSize(20);
+    
+    // Shift letters to the right by one
+    int shiftedIndex = (i + 1) % radialPoints.size();
+        
+    // Display letters based on for current menu
+    switch (currentMenu) {
+      case CONTEXT1:
+        text(char('a' + shiftedIndex), letterX, letterY);
+        break;
+      case CONTEXT2:
+        text(char('h' + shiftedIndex), letterX, letterY);
+        break;
+      case CONTEXT3:
+        text(char('n' + shiftedIndex), letterX, letterY);
+        break;
+      case CONTEXT4:
+        text(char('u' + shiftedIndex), letterX, letterY);
+        break;
+    }
+  }
 }
 
 void drawRadialLines(ArrayList<PVector> radialPoints) {
@@ -487,3 +528,4 @@ boolean pointInTriangle(PVector clickPoint, PVector pointA, PVector pointB, PVec
          && sameSide(clickPoint, pointB, pointA, pointC) 
          && sameSide(clickPoint, pointC, pointA, pointB);
 }
+
