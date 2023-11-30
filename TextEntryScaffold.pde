@@ -105,7 +105,6 @@ void setup()
   radialPointsMap.put(Menu.CONTEXT3, sevenRadialPoints);
   radialPointsMap.put(Menu.CONTEXT4, sixRadialPoints);
 }
-
 //You can modify anything in here. This is just a basic implementation.
 void draw()
 {
@@ -185,6 +184,7 @@ void drawContextMenu() {
   popStyle();
 }
 
+
 void drawLettersForCurrMenu(){ 
   ArrayList<PVector> radialPoints = radialPointsMap.get(currentMenu);
   drawRadialLines(radialPoints);
@@ -204,13 +204,15 @@ void drawLettersForCurrMenu(){
 
     fill(0);
     textAlign(CENTER, CENTER);
-    textSize(20);
+    textSize(22); // Adjusted text size
     
-    // Shift letters to the right by one
     int shiftedIndex = (i + 1) % radialPoints.size();
-        
+
     // Display letters based on for current menu
     switch (currentMenu) {
+      case MAIN: 
+        displayMainScreenLetters(letterX, letterY, i);
+        break;
       case CONTEXT1:
         text(char('a' + shiftedIndex), letterX, letterY);
         break;
@@ -225,6 +227,53 @@ void drawLettersForCurrMenu(){
         break;
     }
   }
+}
+
+void displayMainScreenLetters(float letterX, float letterY, int index) { 
+  // adjust as needed 
+  int textSizeVal = 15;       
+  float horizontalOffset = 1;
+  float verticalOffset = 10;   
+
+  // Display "h i j k l m" 
+  if (index == 0) {
+    textSize(textSizeVal);
+    float horizontalOffset2 = -5; // Adjust this value for horizontal offset
+    String verticalText = "h\ni\nj\nk\nl\nm";
+    String[] lines = verticalText.split("\n");
+    
+    verticalDisplay(lines, textSizeVal, horizontalOffset2, verticalOffset, letterX, letterY);
+  } 
+  // Display "n o p q r s t" 
+  else if (index == 1) {
+    textSize(textSizeVal);
+    text("n o p q r s t", letterX + horizontalOffset, letterY + (-10));
+  }
+  // Display "u v w x y z" 
+  else if (index == 2) {
+    textSize(textSizeVal);
+    float horizontalOffset3 = 10; // Adjust this value for horizontal offset
+    String verticalText = "u\nv\nw\nx\ny\nz";
+    String[] lines = verticalText.split("\n");
+    verticalDisplay(lines, textSizeVal, horizontalOffset3, verticalOffset, letterX, letterY);
+  } 
+  else {
+    // Display "a b c d e f g" 
+    //if (index == 3) {
+    textSize(textSizeVal);
+    text("a b c d e f g", letterX + horizontalOffset, letterY + verticalOffset);
+    //} 
+  }
+}
+
+// render text vertically
+void verticalDisplay(String[] lines, int textSizeVal, float horizontalOffset, 
+                    float verticalOffset, float letterX, float letterY){ 
+    float verticalTextHeight = lines.length * textSizeVal;
+    float verticalTextY = letterY - verticalTextHeight / 2 + verticalOffset; 
+    for (int i = 0; i < lines.length; i++) {
+      text(lines[i], letterX + horizontalOffset, verticalTextY + i * textSizeVal);
+    }
 }
 
 void drawRadialLines(ArrayList<PVector> radialPoints) {
@@ -528,4 +577,3 @@ boolean pointInTriangle(PVector clickPoint, PVector pointA, PVector pointB, PVec
          && sameSide(clickPoint, pointB, pointA, pointC) 
          && sameSide(clickPoint, pointC, pointA, pointB);
 }
-
