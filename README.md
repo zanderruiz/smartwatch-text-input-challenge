@@ -2,19 +2,27 @@
 
 Welcome to the repository for our smartwatch text input system prototype. This project was part of a week-long challenge in human-computer interaction (HCI) design aimed at enhancing the typing experience on a small one-inch touch screen. Our approach involved leveraging wheel menus and intuitive interactions to optimize the user's typing speed.
 
+<div alight="center">
+  <img src="readme_imgs/main_menu.png" alt="Main Menu" width="400">
+</div>
+
 ## Purpose
 The primary goal of this project was to improve upon conventional smartwatch text input systems with the user-experience at the center of our design. We focused on creating a solution that not only improves typing speed but also presents a system that's simple and easy for users to learn quickly. Through a rapid period of iterative prototyping, we aimed to address the challenges presented by a small screen and limited interaction options to create the most user-friendly smartwatch typing experience.
 
 ## How to Use
 Our smartwatch text input system, crafted in [Processing](https://processing.org/)—a powerful Java-based software sketchbook great for rapidly prototyping interactive graphical interfaces—offers a unique wheel menu interface. Here's a quick guide on how to navigate the system:
 
-- Main Menu: Fire up the program, and voila! You're greeted with an initial menu featuring multiple letter groups. Click that center button, and you're off to exploring a specific group.
+- Main Menu: Upon starting up the program, you'll be greeted with an initial menu featuring multiple letter groups. Click any letter-group button will launch you into a context menu with wheel buttons for each letter.
 
 - Context Wheel Menu: Dive deeper by clicking a menu button, guiding you into a context wheel menu tailored to the selected letter group. Interact with the wheel to pick your desired letter or option.
 
-- Center Button Functions: In the main menu, the center button pulls double duty as your trusty space key. When you're knee-deep in a context wheel menu, it's your ticket back to the main stage.
+- Center Button Functions: In the main menu, the center button pulls double duty as your trusty space key. When in a context wheel menu, it navigates back to the main menu. However, selecting a letter in the context menu will also send you back to the main menu.
 
-- Swipe Left: Made a little oopsie? No worries—just swipe left to trigger the backspace function and tidy up those typos.
+- Swipe Left: Made a mistake? No worries—just swipe left to trigger the backspace function and tidy up those typos.
+
+<div style="display: flex; justify-content: space-between; max-width: 800px;">
+  <img src="readme_imgs/main_menu.png" alt="Main Menu" width="300">
+  <img src="readme_imgs/context_menu.png" alt="Context Wheel Menu" width="300">
 
 ## Challenge Overview
 Our team participated in a competitive challenge against 30 other teams to create a superior smartwatch typing motif. The challenge involved improving a preliminary letter selection screen commonly found in basic smartwatch implementations. Despite the time constraints, we pushed ourselves to achieve the best possible system with multiple ideation and prototyping sessions throughout our week-long sprint.
